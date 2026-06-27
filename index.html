@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบจัดการนักศึกษา</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:       #8B1A1A;
+  --red-light: #B22222;
+  --red-50:    #FDF0F0;
+  --red-100:   #F9DADA;
+  --blue:      #1A5CA8;
+  --blue-50:   #EBF2FC;
+  --teal:      #0E7C5A;
+  --teal-50:   #E6F5EF;
+  --amber:     #9C6000;
+  --amber-50:  #FEF6E4;
+  --purple:    #5B3EA1;
+  --purple-50: #F0EBFD;
+  --green:     #2A7A2A;
+  --green-50:  #EDF7ED;
+  --gray-50:   #F8F7F5;
+  --gray-100:  #EEECE8;
+  --gray-200:  #DDD9D1;
+  --gray-400:  #9C9790;
+  --gray-600:  #625F58;
+  --gray-800:  #2E2C28;
+  --bg:        #F2F1EE;
+  --white:     #FFFFFF;
+  --radius:    12px;
+  --radius-sm: 8px;
+  --shadow:    0 2px 10px rgba(0,0,0,.07);
+  --shadow-md: 0 6px 28px rgba(0,0,0,.12);
+}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--gray-800);min-height:100vh;font-size:15px}
+
+/* ─── LOGIN ─── */
+#loginPage{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(140deg,#5a0a0a 0%,#8B1A1A 45%,#2a1060 100%)}
+.login-card{background:var(--white);border-radius:20px;padding:48px 44px;width:100%;max-width:420px;box-shadow:var(--shadow-md)}
+.login-logo{width:64px;height:64px;background:linear-gradient(135deg,var(--red),var(--red-light));border-radius:16px;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+.login-title{text-align:center;font-size:22px;font-weight:700;margin-bottom:4px}
+.login-sub{text-align:center;font-size:13px;color:var(--gray-400);margin-bottom:32px}
+.fgroup{margin-bottom:16px}
+.fgroup label{display:block;font-size:13px;font-weight:600;color:var(--gray-600);margin-bottom:6px}
+.fgroup input{width:100%;padding:11px 14px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);
+  font-family:'Sarabun',sans-serif;font-size:15px;outline:none;transition:.2s}
+.fgroup input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(139,26,26,.12)}
+.btn-login{width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);
+  font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:.2s;margin-top:8px}
+.btn-login:hover{background:var(--red-light)}
+.err-msg{background:var(--red-50);color:var(--red);border:1px solid var(--red-100);border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:14px;margin-top:12px;display:none;text-align:center}
+.api-box{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:16px;margin-bottom:20px}
+.api-box label{display:block;font-size:13px;font-weight:600;color:var(--gray-600);margin-bottom:6px}
+.api-box input{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:6px;
+  font-family:'Sarabun',sans-serif;font-size:13px;outline:none;margin-bottom:8px}
+.api-box input:focus{border-color:var(--red)}
+.btn-sm{padding:7px 16px;border:none;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.btn-sm.primary{background:var(--red);color:#fff}
+
+/* ─── APP SHELL ─── */
+#mainApp{display:none}
+.topbar{background:var(--red);color:#fff;padding:0 28px;height:58px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-logo{font-size:22px}
+.topbar-title{font-size:17px;font-weight:700}
+.btn-logout{padding:6px 16px;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);
+  border-radius:6px;font-family:'Sarabun',sans-serif;font-size:14px;cursor:pointer;transition:.2s}
+.btn-logout:hover{background:rgba(255,255,255,.28)}
+
+/* ─── TABS ─── */
+.tab-bar{background:#fff;border-bottom:1px solid var(--gray-200);padding:0 28px;display:flex;gap:4px;overflow-x:auto}
+.tab{padding:14px 20px;font-size:14px;font-weight:600;color:var(--gray-400);cursor:pointer;
+  border-bottom:3px solid transparent;white-space:nowrap;transition:.2s}
+.tab:hover{color:var(--gray-800)}
+.tab.active{color:var(--red);border-bottom-color:var(--red)}
+
+/* ─── CONTENT ─── */
+.content{padding:24px 28px;max-width:1200px;margin:0 auto}
+
+/* ─── SUMMARY CARDS ─── */
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.sum-card{background:#fff;border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);
+  border:1px solid var(--gray-200);border-left:4px solid var(--clr,var(--gray-200))}
+.sum-label{font-size:12px;font-weight:700;color:var(--gray-400);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.sum-value{font-size:30px;font-weight:700;color:var(--clr,var(--gray-800))}
+.sum-sub{font-size:12px;color:var(--gray-400);margin-top:4px}
+
+/* ─── PANEL ─── */
+.panel{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-200);margin-bottom:20px;overflow:hidden}
+.panel-hdr{padding:16px 22px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.panel-title{font-size:15px;font-weight:700;color:var(--gray-800)}
+.panel-body{padding:22px}
+
+/* ─── DISTRICT SELECTOR ─── */
+.district-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.district-row label{font-size:13px;font-weight:600;color:var(--gray-600);white-space:nowrap}
+select.district-sel{padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);
+  font-family:'Sarabun',sans-serif;font-size:15px;outline:none;background:#fff;min-width:180px;transition:.2s}
+select.district-sel:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(139,26,26,.1)}
+
+/* ─── FORM ─── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:13px;font-weight:600;color:var(--gray-600)}
+.fg input,.fg select{padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);
+  font-family:'Sarabun',sans-serif;font-size:15px;outline:none;transition:.2s}
+.fg input:focus,.fg select:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(139,26,26,.1)}
+.form-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.btn{padding:10px 22px;border:none;border-radius:var(--radius-sm);font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-light)}
+.btn-ghost{background:#fff;color:var(--gray-600);border:1.5px solid var(--gray-200)}.btn-ghost:hover{background:var(--gray-50)}
+.btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{opacity:.88}
+
+/* ─── SEARCH BAR ─── */
+.search-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--gray-400)}
+.search-input{width:100%;padding:10px 14px 10px 36px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);
+  font-family:'Sarabun',sans-serif;font-size:15px;outline:none;transition:.2s}
+.search-input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(139,26,26,.1)}
+
+/* ─── TABLE ─── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{padding:10px 14px;text-align:left;font-size:12px;font-weight:700;color:#fff;
+  background:var(--red);letter-spacing:.4px;white-space:nowrap}
+thead th:first-child{border-radius:6px 0 0 0}
+thead th:last-child{border-radius:0 6px 0 0}
+tbody tr{border-bottom:1px solid #F5F4F0;transition:.15s}
+tbody tr:hover{background:var(--red-50)}
+tbody tr:last-child{border-bottom:none}
+tbody td{padding:12px 14px;vertical-align:middle}
+.id-badge{display:inline-block;background:var(--blue-50);color:var(--blue);padding:3px 10px;
+  border-radius:20px;font-size:13px;font-weight:600;letter-spacing:.3px}
+
+/* ─── STATUS BADGE ─── */
+.status{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+.s0{background:var(--amber-50);color:var(--amber)}   /* กำลังทำหนังสือ */
+.s1{background:var(--blue-50);color:var(--blue)}     /* รอโรงเรียนตอบกลับ */
+.s2{background:var(--teal-50);color:var(--teal)}     /* ตอบกลับแล้ว */
+.s3{background:var(--purple-50);color:var(--purple)} /* รอลงนาม */
+
+/* ─── ACTION BTNS ─── */
+.act{display:flex;gap:5px}
+.btn-edit{padding:4px 13px;background:var(--amber-50);color:var(--amber);border:1px solid #F5CC7A;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.btn-del{padding:4px 13px;background:var(--red-50);color:var(--red);border:1px solid var(--red-100);border-radius:6px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.btn-edit:hover,.btn-del:hover{opacity:.75}
+
+/* ─── DISTRICT TABLE (summary tab) ─── */
+.dtable{width:100%;border-collapse:collapse;font-size:14px}
+.dtable th{padding:10px 14px;background:var(--gray-50);font-size:12px;font-weight:700;color:var(--gray-400);
+  text-align:left;letter-spacing:.4px;border-bottom:1px solid var(--gray-200)}
+.dtable td{padding:12px 14px;border-bottom:1px solid var(--gray-100)}
+.dtable tr:last-child td{border-bottom:none}
+.dtable tr:hover td{background:var(--red-50)}
+.prog-bar{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;min-width:80px}
+.prog-fill{height:100%;background:var(--red);border-radius:4px;transition:.3s}
+
+/* ─── EMPTY / LOADING ─── */
+.empty{text-align:center;padding:60px 20px;color:var(--gray-400)}
+.empty .ico{font-size:44px;margin-bottom:14px}
+.loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:50px;color:var(--gray-400);font-size:14px}
+.spin{width:20px;height:20px;border:2.5px solid var(--gray-200);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── MODAL ─── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:1000;align-items:center;justify-content:center}
+.overlay.on{display:flex}
+.modal{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:520px;margin:20px;box-shadow:var(--shadow-md);animation:slideIn .2s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:22px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:26px;right:26px;padding:13px 22px;border-radius:10px;color:#fff;font-size:14px;font-weight:600;
+  z-index:9999;transform:translateY(80px);opacity:0;transition:.3s;box-shadow:var(--shadow-md);max-width:320px}
+.toast.on{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--teal)}.toast.err{background:var(--red)}.toast.warn{background:var(--amber)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:700px){
+  .content{padding:16px}
+  .topbar{padding:0 16px}
+  .tab-bar{padding:0 8px}
+  .summary-grid{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .fg.full{grid-column:1}
+  .login-card{padding:32px 22px;margin:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ LOGIN ════ -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">🎓</div>
+    <h1 class="login-title">ระบบจัดการนักศึกษา</h1>
+    <p class="login-sub">กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
+
+    <div class="api-box" id="apiBox">
+      <label>🔗 Google Apps Script URL (ตั้งค่าครั้งแรก)</label>
+      <input type="url" id="apiInput" placeholder="https://script.google.com/macros/s/AKfycbznNgFueRGvxlEAAUcqV1FKqfDZYwtpiTMqIgnZKXLGubfmmDSfVgnLazWg1s8Z9v-arQ/exec" />
+      <button class="btn-sm primary" onclick="saveUrl()">💾 บันทึก URL</button>
+    </div>
+
+    <div class="fgroup">
+      <label>ชื่อผู้ใช้</label>
+      <input type="text" id="uname" placeholder="admin" autocomplete="username"/>
+    </div>
+    <div class="fgroup">
+      <label>รหัสผ่าน</label>
+      <input type="password" id="upass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="err-msg" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ════ MAIN APP ════ -->
+<div id="mainApp">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">🎓</span>
+	  <span class="topbar-title"><i class="ti ti-users" style="font-size:18px;vertical-align:-2px;margin-right:6px" aria-hidden="true"></i>ระบบจัดการนักศึกษา</span>
+    </div> 
+    <button class="btn-logout" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('summary')">📊 ภาพรวม</div>
+    <div class="tab" onclick="switchTab('manage')">📋 จัดการนักศึกษา</div>
+    <div class="tab" onclick="switchTab('search')">🔍 ค้นหารายชื่อนักศึกษา</div>
+    <div class="tab" onclick="switchTab('areas')">🗂️ จัดการพื้นที่</div>
+  </div>
+
+  <!-- ── TAB: SUMMARY ── -->
+  <div id="tab-summary" class="content">
+    <div class="summary-grid">
+      <div class="stat-card sum-card" style="--clr:var(--gray-800)">
+        <div class="sum-label">นักศึกษาทั้งหมด</div>
+        <div class="sum-value" id="s-total">—</div>
+        <div class="sum-sub">ทุกอำเภอ</div>
+      </div>
+      <div class="sum-card" style="--clr:var(--amber)">
+        <div class="sum-label">กำลังทำหนังสือ</div>
+        <div class="sum-value" id="s-s0">—</div>
+      </div>
+      <div class="sum-card" style="--clr:var(--blue)">
+        <div class="sum-label">รอโรงเรียนตอบกลับ</div>
+        <div class="sum-value" id="s-s1">—</div>
+      </div>
+      <div class="sum-card" style="--clr:var(--teal)">
+        <div class="sum-label">ตอบกลับแล้ว / รอลงนาม</div>
+        <div class="sum-value" id="s-s23">—</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-title">สรุปรายอำเภอ</span>
+        <button class="btn ghost btn-ghost btn" onclick="loadSummary()" style="padding:7px 16px;font-size:13px">🔄 รีเฟรช</button>
+      </div>
+      <div class="panel-body">
+        <div class="tbl-wrap">
+          <table class="dtable">
+            <thead>
+              <tr>
+                <th>อำเภอ</th>
+                <th>ทั้งหมด</th>
+                <th>กำลังทำหนังสือ</th>
+                <th>รอตอบกลับ</th>
+                <th>ตอบกลับแล้ว</th>
+                <th>รอลงนาม</th>
+                <th>ความคืบหน้า</th>
+              </tr>
+            </thead>
+            <tbody id="summaryBody">
+              <tr><td colspan="7"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: MANAGE ── -->
+  <div id="tab-manage" class="content" style="display:none">
+    <!-- Add Form -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-title">➕ เพิ่มนักศึกษา</span>
+        <button class="btn btn-ghost" onclick="toggleForm()" id="toggleBtn" style="padding:6px 14px;font-size:13px">ซ่อน</button>
+      </div>
+      <div class="panel-body" id="addFormBody">
+        <div class="district-row">
+          <label>อำเภอ</label>
+          <select class="district-sel" id="addDistrict"></select>
+        </div>
+        <div class="form-grid">
+          <div class="fg">
+            <label>รหัสนักศึกษา *</label>
+            <input type="text" id="f_id" placeholder="เช่น 6912000025"/>
+          </div>
+          <div class="fg">
+            <label>โรงเรียน</label>
+            <input type="text" id="f_school" placeholder="ชื่อโรงเรียน"/>
+          </div>
+          <div class="fg full">
+            <label>ชื่อ-นามสกุล * (เช่น นางสาวฟ้าใส ใจดี)</label>
+            <input type="text" id="f_fullname" placeholder="คำนำหน้า + ชื่อ + นามสกุล"/>
+          </div>
+          <div class="fg">
+            <label>สถานะ</label>
+            <select id="f_status">
+              <option>กำลังทำหนังสือ</option>
+              <option>รอโรงเรียนตอบกลับ</option>
+              <option>ตอบกลับแล้ว</option>
+              <option>รอลงนาม</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>วันที่ส่ง</label>
+            <input type="date" id="f_sendDate"/>
+          </div>
+          <div class="fg">
+            <label>วันที่ลงรับ</label>
+            <input type="date" id="f_recvDate"/>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-red" onclick="addStudent()">+ เพิ่มนักศึกษา</button>
+          <button class="btn btn-ghost" onclick="clearAddForm()">ล้างข้อมูล</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-title">📋 รายชื่อนักศึกษา</span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="district-sel" id="listDistrict" onchange="loadList()" style="font-size:14px;padding:7px 12px"></select>
+          <button class="btn btn-ghost" onclick="loadList()" style="padding:7px 14px;font-size:13px">🔄</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>รหัสนักศึกษา</th>
+                <th>ชื่อ-นามสกุล</th>
+                <th>โรงเรียน</th>
+                <th>สถานะ</th>
+                <th>วันที่ส่ง</th>
+                <th>วันที่ลงรับ</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="listBody">
+              <tr><td colspan="7"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: SEARCH ── -->
+  <div id="tab-search" class="content" style="display:none">
+    <div class="panel">
+      <div class="panel-hdr"><span class="panel-title">🔍 ค้นหาข้ามอำเภอ</span></div>
+      <div class="panel-body">
+        <div class="search-row">
+          <div class="search-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input class="search-input" id="searchQ" placeholder="รหัส / ชื่อ-นามสกุล / โรงเรียน ..." onkeydown="if(event.key==='Enter')doSearch()"/>
+          </div>
+          <select class="district-sel" id="searchDistrict" style="font-size:14px;padding:9px 12px">
+            <option value="">— ทุกอำเภอ —</option>
+          </select>
+          <select class="district-sel" id="searchStatus" style="font-size:14px;padding:9px 12px">
+            <option value="">— ทุกสถานะ —</option>
+            <option>กำลังทำหนังสือ</option>
+            <option>รอโรงเรียนตอบกลับ</option>
+            <option>ตอบกลับแล้ว</option>
+            <option>รอลงนาม</option>
+          </select>
+          <button class="btn btn-red" onclick="doSearch()">ค้นหา</button>
+          <button class="btn btn-ghost" onclick="clearSearch()">ล้าง</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>รหัสนักศึกษา</th>
+                <th>ชื่อ-นามสกุล</th>
+                <th>โรงเรียน</th>
+                <th>อำเภอ</th>
+                <th>สถานะ</th>
+                <th>วันที่ส่ง</th>
+                <th>วันที่ลงรับ</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="searchBody">
+              <tr><td colspan="8">
+                <div class="empty"><div class="ico">🔍</div><p>พิมพ์ค้นหาเพื่อแสดงผล</p></div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: AREAS ── -->
+  <div id="tab-areas" class="content" style="display:none">
+
+    <!-- สร้างใหม่ -->
+    <div class="panel">
+      <div class="panel-hdr"><span class="panel-title">➕ สร้างอำเภอ / ตำบลใหม่</span></div>
+      <div class="panel-body">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div class="fg" style="flex:1;min-width:200px">
+            <label>ชื่ออำเภอ / ตำบล</label>
+            <input type="text" id="newAreaName" placeholder="เช่น ตำบลท่าข้าม, อำเภอเมือง" onkeydown="if(event.key==='Enter')createArea()"/>
+          </div>
+          <button class="btn btn-red" onclick="createArea()" style="height:42px">+ สร้าง</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- รายการ Sheet -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-title">📋 รายการอำเภอ / ตำบลทั้งหมด</span>
+        <button class="btn btn-ghost" onclick="loadAreas()" style="padding:6px 14px;font-size:13px">🔄 รีเฟรช</button>
+      </div>
+      <div class="panel-body" id="areasBody">
+        <div class="loading"><div class="spin"></div>กำลังโหลด...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ RENAME MODAL ════ -->
+<div class="overlay" id="renameOverlay">
+  <div class="modal" style="max-width:400px">
+    <h2 class="modal-title">✏️ เปลี่ยนชื่อ</h2>
+    <input type="hidden" id="rename_old"/>
+    <div class="fg">
+      <label>ชื่อปัจจุบัน</label>
+      <input type="text" id="rename_preview" disabled style="background:var(--gray-50);color:var(--gray-400)"/>
+    </div>
+    <div class="fg" style="margin-top:14px">
+      <label>ชื่อใหม่ *</label>
+      <input type="text" id="rename_new" placeholder="ชื่อใหม่" onkeydown="if(event.key==='Enter')saveRename()"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeRename()">ยกเลิก</button>
+      <button class="btn btn-red" onclick="saveRename()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ EDIT MODAL ════ -->
+<div class="overlay" id="editOverlay">
+  <div class="modal">
+    <h2 class="modal-title">✏️ แก้ไขข้อมูลนักศึกษา</h2>
+    <input type="hidden" id="e_row"/>
+    <input type="hidden" id="e_district"/>
+    <div class="form-grid">
+      <div class="fg"><label>รหัสนักศึกษา *</label><input type="text" id="e_id"/></div>
+      <div class="fg"><label>โรงเรียน</label><input type="text" id="e_school"/></div>
+      <div class="fg full"><label>ชื่อ-นามสกุล *</label><input type="text" id="e_fullname"/></div>
+      <div class="fg">
+        <label>สถานะ</label>
+        <select id="e_status">
+          <option>กำลังทำหนังสือ</option>
+          <option>รอโรงเรียนตอบกลับ</option>
+          <option>ตอบกลับแล้ว</option>
+          <option>รอลงนาม</option>
+        </select>
+      </div>
+      <div class="fg"><label>วันที่ส่ง</label><input type="date" id="e_sendDate"/></div>
+      <div class="fg"><label>วันที่ลงรับ</label><input type="date" id="e_recvDate"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeEdit()">ยกเลิก</button>
+      <button class="btn btn-red" onclick="saveEdit()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ STATE ═══
+let API = localStorage.getItem("sms_api") || "";
+let TOKEN = sessionStorage.getItem("sms_token") || "";
+let districts = [];
+let currentTab = "summary";
+let showForm = true;
+
+const STATUS_CLASS = ["s0","s1","s2","s3"];
+const STATUS_LIST  = ["กำลังทำหนังสือ","รอโรงเรียนตอบกลับ","ตอบกลับแล้ว","รอลงนาม"];
+
+// ═══ INIT ═══
+window.onload = () => {
+  if (API) { document.getElementById("apiInput").value = API; document.getElementById("apiBox").style.display = "none"; }
+  if (TOKEN) { showApp(); init(); }
+};
+
+// ═══ API ═══
+function saveUrl() {
+  const v = document.getElementById("apiInput").value.trim();
+  if (!v.startsWith("https://script.google.com")) { toast("URL ไม่ถูกต้อง","err"); return; }
+  API = v;
+  localStorage.setItem("sms_api", v);
+  document.getElementById("apiBox").style.display = "none";
+  toast("บันทึก URL สำเร็จ","ok");
+}
+
+async function api(params) {
+  if (!API) { toast("กรุณาตั้งค่า URL ก่อน","warn"); document.getElementById("apiBox").style.display = "block"; return null; }
+  try {
+    const qs = new URLSearchParams({ ...params, token: TOKEN }).toString();
+    const r = await fetch(API + "?" + qs);
+    return await r.json();
+  } catch (e) { toast("เชื่อมต่อไม่ได้ ตรวจสอบ URL และ Deploy","err"); return null; }
+}
+
+// ═══ AUTH ═══
+async function doLogin() {
+  const u = document.getElementById("uname").value.trim();
+  const p = document.getElementById("upass").value.trim();
+  const err = document.getElementById("loginErr");
+  const btn = document.getElementById("loginBtn");
+  if (!u || !p) { err.textContent = "กรุณากรอกข้อมูลให้ครบ"; err.style.display = "block"; return; }
+  btn.textContent = "กำลังเข้าสู่ระบบ..."; btn.disabled = true; err.style.display = "none";
+  const d = await api({ action: "login", username: u, password: p });
+  btn.textContent = "เข้าสู่ระบบ"; btn.disabled = false;
+  if (d && d.success) {
+    TOKEN = d.token; sessionStorage.setItem("sms_token", TOKEN);
+    showApp(); init();
+  } else {
+    err.textContent = (d && d.message) || "เข้าสู่ระบบไม่สำเร็จ";
+    err.style.display = "block";
+  }
+}
+
+function doLogout() {
+  TOKEN = ""; sessionStorage.removeItem("sms_token");
+  document.getElementById("loginPage").style.display = "flex";
+  document.getElementById("mainApp").style.display = "none";
+  document.getElementById("upass").value = "";
+}
+
+function showApp() {
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("mainApp").style.display = "block";
+}
+
+// ═══ INIT DATA ═══
+async function init() {
+  const d = await api({ action: "getSheets" });
+  if (d && d.success) {
+    districts = d.districts;
+    populateDistrictSelects();
+    loadSummary();
+  }
+}
+
+function populateDistrictSelects() {
+  const selectors = ["addDistrict", "listDistrict", "searchDistrict"];
+  selectors.forEach(id => {
+    const el = document.getElementById(id);
+    const addAll = id === "searchDistrict";
+    el.innerHTML = addAll ? '<option value="">— ทุกอำเภอ —</option>' : "";
+    districts.forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = d; opt.textContent = d;
+      el.appendChild(opt);
+    });
+  });
+  if (districts.length > 0) loadList();
+}
+
+// ═══ TABS ═══
+function switchTab(name) {
+  currentTab = name;
+  const tabs = ["summary","manage","search","areas"];
+  document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", tabs[i] === name));
+  tabs.forEach(t => {
+    document.getElementById("tab-"+t).style.display = t === name ? "block" : "none";
+  });
+  if (name === "summary") loadSummary();
+  if (name === "manage" && districts.length > 0) loadList();
+  if (name === "areas") loadAreas();
+}
+
+// ═══ AREA MANAGEMENT ═══
+async function loadAreas() {
+  const d = await api({ action: "getSheets" });
+  if (!d || !d.success) return;
+  districts = d.districts;
+  renderAreas(districts);
+  populateDistrictSelects();
+}
+
+function renderAreas(list) {
+  const el = document.getElementById("areasBody");
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="ico">📭</div><p>ยังไม่มีอำเภอ/ตำบล</p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${list.map((name, i) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+          background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:13px;font-weight:600;color:var(--gray-400);min-width:22px">${i+1}.</span>
+            <span style="font-size:15px;font-weight:600;color:var(--gray-800)">${esc(name)}</span>
+          </div>
+          <div class="act">
+            <button class="btn-edit" onclick="openRename('${esc(name)}')">✏️ เปลี่ยนชื่อ</button>
+            <button class="btn-del" onclick="deleteArea('${esc(name)}')">🗑️ ลบ</button>
+          </div>
+        </div>`).join("")}
+    </div>`;
+}
+
+async function createArea() {
+  const name = document.getElementById("newAreaName").value.trim();
+  if (!name) { toast("กรุณาระบุชื่อ","warn"); return; }
+  const d = await api({ action: "createSheet", name });
+  if (d && d.success) {
+    toast(d.message,"ok");
+    document.getElementById("newAreaName").value = "";
+    districts = d.districts;
+    renderAreas(districts);
+    populateDistrictSelects();
+  } else toast((d&&d.message)||"สร้างไม่สำเร็จ","err");
+}
+
+async function deleteArea(name) {
+  // ขอ confirm ก่อน — ถ้า backend บอกว่ามีข้อมูลจะถามอีกรอบ
+  const d1 = await api({ action: "deleteSheet", name });
+  if (!d1) return;
+  if (d1.needConfirm) {
+    if (!confirm(`⚠️ "${name}" มีนักศึกษา ${d1.count} คน\nข้อมูลจะหายถาวร ยืนยันลบ?`)) return;
+    const d2 = await api({ action: "deleteSheet", name, confirm: "yes" });
+    if (d2 && d2.success) {
+      toast(d2.message,"ok");
+      districts = d2.districts;
+      renderAreas(districts);
+      populateDistrictSelects();
+    } else toast((d2&&d2.message)||"ลบไม่สำเร็จ","err");
+  } else if (d1.success) {
+    toast(d1.message,"ok");
+    districts = d1.districts;
+    renderAreas(districts);
+    populateDistrictSelects();
+  } else toast(d1.message||"ลบไม่สำเร็จ","err");
+}
+
+function openRename(name) {
+  document.getElementById("rename_old").value     = name;
+  document.getElementById("rename_preview").value = name;
+  document.getElementById("rename_new").value     = name;
+  document.getElementById("renameOverlay").classList.add("on");
+  setTimeout(() => document.getElementById("rename_new").select(), 100);
+}
+function closeRename() { document.getElementById("renameOverlay").classList.remove("on"); }
+
+async function saveRename() {
+  const oldName = document.getElementById("rename_old").value;
+  const newName = document.getElementById("rename_new").value.trim();
+  if (!newName) { toast("กรุณาระบุชื่อใหม่","warn"); return; }
+  if (oldName === newName) { closeRename(); return; }
+  const d = await api({ action: "renameSheet", oldName, newName });
+  if (d && d.success) {
+    toast(d.message,"ok");
+    closeRename();
+    districts = d.districts;
+    renderAreas(districts);
+    populateDistrictSelects();
+  } else toast((d&&d.message)||"เปลี่ยนชื่อไม่สำเร็จ","err");
+}
+
+// ═══ SUMMARY ═══
+async function loadSummary() {
+  document.getElementById("summaryBody").innerHTML =
+    `<tr><td colspan="7"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></td></tr>`;
+  const d = await api({ action: "getSummary" });
+  if (!d || !d.success) return;
+
+  let total = 0, s = [0,0,0,0];
+  const rows = d.summary.map(item => {
+    total += item.total;
+    STATUS_LIST.forEach((st, i) => { s[i] += (item.byStatus[st] || 0); });
+    const done = (item.byStatus["ตอบกลับแล้ว"]||0) + (item.byStatus["รอลงนาม"]||0);
+    const pct = item.total > 0 ? Math.round(done/item.total*100) : 0;
+    return `<tr>
+      <td><strong>${esc(item.district)}</strong></td>
+      <td><strong>${item.total}</strong></td>
+      <td><span class="status s0">${item.byStatus["กำลังทำหนังสือ"]||0}</span></td>
+      <td><span class="status s1">${item.byStatus["รอโรงเรียนตอบกลับ"]||0}</span></td>
+      <td><span class="status s2">${item.byStatus["ตอบกลับแล้ว"]||0}</span></td>
+      <td><span class="status s3">${item.byStatus["รอลงนาม"]||0}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="prog-bar" style="flex:1"><div class="prog-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:12px;color:var(--gray-400);min-width:30px">${pct}%</span>
+        </div>
+      </td>
+    </tr>`;
+  });
+
+  document.getElementById("s-total").textContent = total;
+  document.getElementById("s-s0").textContent = s[0];
+  document.getElementById("s-s1").textContent = s[1];
+  document.getElementById("s-s23").textContent = s[2]+s[3];
+  document.getElementById("summaryBody").innerHTML = rows.join("") || emptyRow(7);
+}
+
+// ═══ LIST ═══
+async function loadList() {
+  const district = document.getElementById("listDistrict").value;
+  if (!district) return;
+  setLoading("listBody", 7);
+  const d = await api({ action: "getStudents", district });
+  if (d && d.success) renderList(d.students, district);
+}
+
+function renderList(students, district) {
+  const tbody = document.getElementById("listBody");
+  if (!students.length) { tbody.innerHTML = emptyRow(7, "ไม่มีนักศึกษาในอำเภอนี้"); return; }
+  tbody.innerHTML = students.map(s => `
+    <tr>
+      <td><span class="id-badge">${esc(s.studentId)}</span></td>
+      <td>${esc(s.fullname)}</td>
+      <td style="font-size:13px">${esc(s.school)||"—"}</td>
+      <td>${statusBadge(s.status)}</td>
+      <td style="font-size:13px;color:var(--gray-600)">${esc(s.sendDate)||"—"}</td>
+      <td style="font-size:13px;color:var(--gray-600)">${esc(s.recvDate)||"—"}</td>
+      <td>
+        <div class="act">
+          <button class="btn-edit" onclick='openEdit(${JSON.stringify({...s,district})})'>แก้ไข</button>
+          <button class="btn-del" onclick="delStudent('${esc(district)}',${s.rowIndex},'${esc(s.fullname)}')">ลบ</button>
+        </div>
+      </td>
+    </tr>`).join("");
+}
+
+// ═══ ADD ═══
+async function addStudent() {
+  const p = {
+    action: "addStudent",
+    district:  document.getElementById("addDistrict").value,
+    studentId: document.getElementById("f_id").value.trim(),
+    fullname:  document.getElementById("f_fullname").value.trim(),
+    school:    document.getElementById("f_school").value.trim(),
+    status:    document.getElementById("f_status").value,
+    sendDate:  document.getElementById("f_sendDate").value,
+    recvDate:  document.getElementById("f_recvDate").value
+  };
+  if (!p.studentId || !p.fullname) { toast("กรุณากรอกรหัสและชื่อ-นามสกุล","warn"); return; }
+  const d = await api(p);
+  if (d && d.success) { toast(d.message,"ok"); clearAddForm(); loadList(); loadSummary(); }
+  else toast((d&&d.message)||"เพิ่มไม่สำเร็จ","err");
+}
+
+function clearAddForm() {
+  ["f_id","f_fullname","f_school","f_sendDate","f_recvDate"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("f_status").value = "กำลังทำหนังสือ";
+}
+
+// ═══ DELETE ═══
+async function delStudent(district, rowIndex, name) {
+  if (!confirm(`ยืนยันลบ "${name}" ?`)) return;
+  const d = await api({ action: "deleteStudent", district, rowIndex });
+  if (d && d.success) { toast(d.message,"ok"); loadList(); loadSummary(); }
+  else toast((d&&d.message)||"ลบไม่สำเร็จ","err");
+}
+
+// ═══ EDIT ═══
+function openEdit(s) {
+  document.getElementById("e_row").value      = s.rowIndex;
+  document.getElementById("e_district").value = s.district;
+  document.getElementById("e_id").value       = s.studentId;
+  document.getElementById("e_fullname").value = s.fullname;
+  document.getElementById("e_school").value   = s.school;
+  document.getElementById("e_status").value   = s.status;
+  // แปลง dd/MM/yyyy → yyyy-MM-dd สำหรับ input[type=date]
+  document.getElementById("e_sendDate").value = thDateToInput(s.sendDate);
+  document.getElementById("e_recvDate").value = thDateToInput(s.recvDate);
+  document.getElementById("editOverlay").classList.add("on");
+}
+
+function closeEdit() { document.getElementById("editOverlay").classList.remove("on"); }
+
+async function saveEdit() {
+  const p = {
+    action:    "updateStudent",
+    district:  document.getElementById("e_district").value,
+    rowIndex:  document.getElementById("e_row").value,
+    studentId: document.getElementById("e_id").value.trim(),
+    fullname:  document.getElementById("e_fullname").value.trim(),
+    school:    document.getElementById("e_school").value.trim(),
+    status:    document.getElementById("e_status").value,
+    sendDate:  document.getElementById("e_sendDate").value,
+    recvDate:  document.getElementById("e_recvDate").value
+  };
+  if (!p.studentId || !p.fullname) { toast("กรุณากรอกรหัสและชื่อ-นามสกุล","warn"); return; }
+  const d = await api(p);
+  if (d && d.success) { toast(d.message,"ok"); closeEdit(); loadList(); loadSummary(); if(currentTab==="search") doSearch(); }
+  else toast((d&&d.message)||"แก้ไขไม่สำเร็จ","err");
+}
+
+// ═══ SEARCH ═══
+async function doSearch() {
+  setLoading("searchBody", 8);
+  const d = await api({
+    action:   "search",
+    query:    document.getElementById("searchQ").value.trim(),
+    district: document.getElementById("searchDistrict").value,
+    status:   document.getElementById("searchStatus").value
+  });
+  if (!d || !d.success) return;
+  const tbody = document.getElementById("searchBody");
+  if (!d.students.length) { tbody.innerHTML = emptyRow(8,"ไม่พบผลลัพธ์"); return; }
+  tbody.innerHTML = d.students.map(s => `
+    <tr>
+      <td><span class="id-badge">${esc(s.studentId)}</span></td>
+      <td>${esc(s.fullname)}</td>
+      <td style="font-size:13px">${esc(s.school)||"—"}</td>
+      <td><span style="background:var(--blue-50);color:var(--blue);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${esc(s.district)}</span></td>
+      <td>${statusBadge(s.status)}</td>
+      <td style="font-size:13px;color:var(--gray-600)">${esc(s.sendDate)||"—"}</td>
+      <td style="font-size:13px;color:var(--gray-600)">${esc(s.recvDate)||"—"}</td>
+      <td>
+        <div class="act">
+          <button class="btn-edit" onclick='openEdit(${JSON.stringify(s)})'>แก้ไข</button>
+          <button class="btn-del" onclick="delStudentFromSearch('${esc(s.district)}',${s.rowIndex},'${esc(s.fullname)}')">ลบ</button>
+        </div>
+      </td>
+    </tr>`).join("");
+}
+
+function clearSearch() {
+  document.getElementById("searchQ").value = "";
+  document.getElementById("searchDistrict").value = "";
+  document.getElementById("searchStatus").value = "";
+  document.getElementById("searchBody").innerHTML = `<tr><td colspan="8">
+    <div class="empty"><div class="ico">🔍</div><p>พิมพ์ค้นหาเพื่อแสดงผล</p></div>
+  </td></tr>`;
+}
+
+async function delStudentFromSearch(district, rowIndex, name) {
+  if (!confirm(`ยืนยันลบ "${name}" ?`)) return;
+  const d = await api({ action: "deleteStudent", district, rowIndex });
+  if (d && d.success) { toast(d.message,"ok"); doSearch(); loadSummary(); }
+  else toast((d&&d.message)||"ลบไม่สำเร็จ","err");
+}
+
+// ═══ UTILS ═══
+function statusBadge(st) {
+  const i = STATUS_LIST.indexOf(st);
+  const cls = i >= 0 ? STATUS_CLASS[i] : "";
+  return `<span class="status ${cls}">${esc(st)||"—"}</span>`;
+}
+
+function toggleForm() {
+  showForm = !showForm;
+  document.getElementById("addFormBody").style.display = showForm ? "block" : "none";
+  document.getElementById("toggleBtn").textContent = showForm ? "ซ่อน" : "แสดง";
+}
+
+function setLoading(id, cols) {
+  document.getElementById(id).innerHTML =
+    `<tr><td colspan="${cols}"><div class="loading"><div class="spin"></div>กำลังโหลด...</div></td></tr>`;
+}
+
+function emptyRow(cols, msg = "ไม่มีข้อมูล") {
+  return `<tr><td colspan="${cols}"><div class="empty"><div class="ico">📭</div><p>${msg}</p></div></td></tr>`;
+}
+
+function esc(s) {
+  if (!s) return "";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function thDateToInput(dd) {
+  if (!dd) return "";
+  const parts = dd.split("/");
+  if (parts.length !== 3) return "";
+  return `${parts[2]}-${parts[1].padStart(2,"0")}-${parts[0].padStart(2,"0")}`;
+}
+
+let toastTimer;
+function toast(msg, type = "ok") {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = `toast ${type} on`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = "toast", 3500);
+}
+
+document.getElementById("editOverlay").addEventListener("click", e => { if (e.target === e.currentTarget) closeEdit(); });
+document.getElementById("renameOverlay").addEventListener("click", e => { if (e.target === e.currentTarget) closeRename(); });
+</script>
+</body>
+</html>
