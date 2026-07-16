@@ -246,7 +246,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
   <div class="tab-bar">
     <div class="tab active" onclick="switchTab('summary')">📊 ภาพรวม</div>
     <div class="tab" onclick="switchTab('manage')">📋 จัดการนักศึกษา</div>
-    <div class="tab" onclick="switchTab('search')">🔍 ค้นหาข้ามอำเภอ</div>
+    <div class="tab" onclick="switchTab('search')">🔍 ค้นหาทุกตำบล</div>
     <div class="tab" onclick="switchTab('areas')">🗂️ จัดการพื้นที่</div>
   </div>
 
@@ -256,7 +256,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
       <div class="stat-card sum-card" style="--clr:var(--gray-800)">
         <div class="sum-label">นักศึกษาทั้งหมด</div>
         <div class="sum-value" id="s-total">—</div>
-        <div class="sum-sub">ทุกอำเภอ</div>
+        <div class="sum-sub">ทุกตำบล</div>
       </div>
       <div class="sum-card" style="--clr:var(--amber)">
         <div class="sum-label">กำลังทำหนังสือ</div>
@@ -274,7 +274,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
 
     <div class="panel">
       <div class="panel-hdr">
-        <span class="panel-title">สรุปรายอำเภอ</span>
+        <span class="panel-title">สรุปรายตำบล</span>
         <button class="btn ghost btn-ghost btn" onclick="loadSummary()" style="padding:7px 16px;font-size:13px">🔄 รีเฟรช</button>
       </div>
       <div class="panel-body">
@@ -282,7 +282,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
           <table class="dtable">
             <thead>
               <tr>
-                <th>อำเภอ</th>
+                <th>ตำบล</th>
                 <th>ทั้งหมด</th>
                 <th>กำลังทำหนังสือ</th>
                 <th>รอตอบกลับ</th>
@@ -310,7 +310,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
       </div>
       <div class="panel-body" id="addFormBody">
         <div class="district-row">
-          <label>อำเภอ</label>
+          <label>ตำบล</label>
           <select class="district-sel" id="addDistrict"></select>
         </div>
         <div class="form-grid">
@@ -386,7 +386,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
   <!-- ── TAB: SEARCH ── -->
   <div id="tab-search" class="content" style="display:none">
     <div class="panel">
-      <div class="panel-hdr"><span class="panel-title">🔍 ค้นหาข้ามอำเภอ</span></div>
+      <div class="panel-hdr"><span class="panel-title">🔍 ค้นหาข้ามตำบล</span></div>
       <div class="panel-body">
         <div class="search-row">
           <div class="ac-wrap">
@@ -401,7 +401,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
             <div class="ac-list" id="acList"></div>
           </div>
           <select class="district-sel" id="searchDistrict" style="font-size:14px;padding:9px 12px">
-            <option value="">— ทุกอำเภอ —</option>
+            <option value="">— ทุกตำบล —</option>
           </select>
           <select class="district-sel" id="searchStatus" style="font-size:14px;padding:9px 12px">
             <option value="">— ทุกสถานะ —</option>
@@ -420,7 +420,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
                 <th>รหัสนักศึกษา</th>
                 <th>ชื่อ-นามสกุล</th>
                 <th>โรงเรียน</th>
-                <th>อำเภอ</th>
+                <th>ตำบล</th>
                 <th>สถานะ</th>
                 <th>วันที่ส่ง</th>
                 <th>วันที่ลงรับ</th>
@@ -443,12 +443,12 @@ tbody td{padding:12px 14px;vertical-align:middle}
 
     <!-- สร้างใหม่ -->
     <div class="panel">
-      <div class="panel-hdr"><span class="panel-title">➕ สร้างอำเภอ / ตำบลใหม่</span></div>
+      <div class="panel-hdr"><span class="panel-title">➕ ตำบลใหม่</span></div>
       <div class="panel-body">
         <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
           <div class="fg" style="flex:1;min-width:200px">
-            <label>ชื่ออำเภอ / ตำบล</label>
-            <input type="text" id="newAreaName" placeholder="เช่น ตำบลท่าข้าม, อำเภอเมือง" onkeydown="if(event.key==='Enter')createArea()"/>
+            <label>ตำบล</label>
+            <input type="text" id="newAreaName" placeholder="เช่น ตำบลท่าข้าม" onkeydown="if(event.key==='Enter')createArea()"/>
           </div>
           <button class="btn btn-red" onclick="createArea()" style="height:42px">+ สร้าง</button>
         </div>
@@ -458,7 +458,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
     <!-- รายการ Sheet -->
     <div class="panel">
       <div class="panel-hdr">
-        <span class="panel-title">📋 รายการอำเภอ / ตำบลทั้งหมด</span>
+        <span class="panel-title">📋 ตำบลทั้งหมด</span>
         <button class="btn btn-ghost" onclick="loadAreas()" style="padding:6px 14px;font-size:13px">🔄 รีเฟรช</button>
       </div>
       <div class="panel-body" id="areasBody">
@@ -604,7 +604,7 @@ function populateDistrictSelects() {
   selectors.forEach(id => {
     const el = document.getElementById(id);
     const addAll = id === "searchDistrict";
-    el.innerHTML = addAll ? '<option value="">— ทุกอำเภอ —</option>' : "";
+    el.innerHTML = addAll ? '<option value="">— ทุกตำบล —</option>' : "";
     districts.forEach(d => {
       const opt = document.createElement("option");
       opt.value = d; opt.textContent = d;
@@ -639,7 +639,7 @@ async function loadAreas() {
 function renderAreas(list) {
   const el = document.getElementById("areasBody");
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="ico">📭</div><p>ยังไม่มีอำเภอ/ตำบล</p></div>`;
+    el.innerHTML = `<div class="empty"><div class="ico">📭</div><p>ยังไม่มีตำบล</p></div>`;
     return;
   }
   el.innerHTML = `
@@ -767,7 +767,7 @@ async function loadList() {
 
 function renderList(students, district) {
   const tbody = document.getElementById("listBody");
-  if (!students.length) { tbody.innerHTML = emptyRow(7, "ไม่มีนักศึกษาในอำเภอนี้"); return; }
+  if (!students.length) { tbody.innerHTML = emptyRow(7, "ไม่มีนักศึกษาในตำบลนี้"); return; }
   tbody.innerHTML = students.map(s => `
     <tr>
       <td><span class="id-badge">${esc(s.studentId)}</span></td>
