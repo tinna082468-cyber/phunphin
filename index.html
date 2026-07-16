@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ระบบจัดการนักศึกษา</title>
+<title>ระบบจัดการนักศึกษาฝึกสอน</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -186,6 +187,18 @@ tbody td{padding:12px 14px;vertical-align:middle}
 .toast.ok{background:var(--teal)}.toast.err{background:var(--red)}.toast.warn{background:var(--amber)}
 
 /* ─── RESPONSIVE ─── */
+/* ─── AUTOCOMPLETE ─── */
+.ac-wrap{position:relative;flex:1;min-width:200px}
+.ac-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--gray-400)}
+.ac-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow-md);z-index:500;max-height:220px;overflow-y:auto;display:none}
+.ac-list.show{display:block}
+.ac-item{padding:10px 14px;font-size:14px;cursor:pointer;color:var(--gray-800);border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:8px}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.active{background:var(--red-50);color:var(--red)}
+.ac-item mark{background:none;color:var(--red);font-weight:700}
+.ac-tag{font-size:11px;padding:2px 7px;border-radius:10px;background:var(--gray-100);color:var(--gray-400);flex-shrink:0}
+
 @media(max-width:700px){
   .content{padding:16px}
   .topbar{padding:0 16px}
@@ -203,14 +216,9 @@ tbody td{padding:12px 14px;vertical-align:middle}
 <div id="loginPage">
   <div class="login-card">
     <div class="login-logo">🎓</div>
-    <h1 class="login-title">ระบบจัดการนักศึกษา</h1>
+    <h1 class="login-title">ระบบจัดการนักศึกษาฝึกสอน</h1>
     <p class="login-sub">กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
 
-    <div class="api-box" id="apiBox">
-      <label>🔗 Google Apps Script URL (ตั้งค่าครั้งแรก)</label>
-      <input type="url" id="apiInput" placeholder="https://script.google.com/macros/s/AKfycbznNgFueRGvxlEAAUcqV1FKqfDZYwtpiTMqIgnZKXLGubfmmDSfVgnLazWg1s8Z9v-arQ/exec" />
-      <button class="btn-sm primary" onclick="saveUrl()">💾 บันทึก URL</button>
-    </div>
 
     <div class="fgroup">
       <label>ชื่อผู้ใช้</label>
@@ -230,15 +238,15 @@ tbody td{padding:12px 14px;vertical-align:middle}
   <div class="topbar">
     <div class="topbar-left">
       <span class="topbar-logo">🎓</span>
-	  <span class="topbar-title"><i class="ti ti-users" style="font-size:18px;vertical-align:-2px;margin-right:6px" aria-hidden="true"></i>ระบบจัดการนักศึกษา</span>
-    </div> 
+      <span class="topbar-title"><i class="ti ti-school" style="font-size:18px;vertical-align:-2px;margin-right:6px" aria-hidden="true"></i>ระบบจัดการนักศึกษาฝึกสอน</span>
+    </div>
     <button class="btn-logout" onclick="doLogout()">ออกจากระบบ</button>
   </div>
 
   <div class="tab-bar">
     <div class="tab active" onclick="switchTab('summary')">📊 ภาพรวม</div>
     <div class="tab" onclick="switchTab('manage')">📋 จัดการนักศึกษา</div>
-    <div class="tab" onclick="switchTab('search')">🔍 ค้นหารายชื่อนักศึกษา</div>
+    <div class="tab" onclick="switchTab('search')">🔍 ค้นหาข้ามอำเภอ</div>
     <div class="tab" onclick="switchTab('areas')">🗂️ จัดการพื้นที่</div>
   </div>
 
@@ -315,7 +323,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
             <input type="text" id="f_school" placeholder="ชื่อโรงเรียน"/>
           </div>
           <div class="fg full">
-            <label>ชื่อ-นามสกุล * (เช่น นางสาวฟ้าใส ใจดี)</label>
+            <label>ชื่อ-นามสกุล * (เช่น นางสาวเพ็ญเพชร เพ็ญพน)</label>
             <input type="text" id="f_fullname" placeholder="คำนำหน้า + ชื่อ + นามสกุล"/>
           </div>
           <div class="fg">
@@ -381,11 +389,16 @@ tbody td{padding:12px 14px;vertical-align:middle}
       <div class="panel-hdr"><span class="panel-title">🔍 ค้นหาข้ามอำเภอ</span></div>
       <div class="panel-body">
         <div class="search-row">
-          <div class="search-wrap">
+          <div class="ac-wrap">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
             </svg>
-            <input class="search-input" id="searchQ" placeholder="รหัส / ชื่อ-นามสกุล / โรงเรียน ..." onkeydown="if(event.key==='Enter')doSearch()"/>
+            <input class="search-input" id="searchQ" placeholder="รหัส / ชื่อ-นามสกุล / โรงเรียน ..."
+              oninput="acInput(this.value)"
+              onkeydown="acKeydown(event)"
+              onblur="setTimeout(()=>acClose(),180)"
+              autocomplete="off"/>
+            <div class="ac-list" id="acList"></div>
           </div>
           <select class="district-sel" id="searchDistrict" style="font-size:14px;padding:9px 12px">
             <option value="">— ทุกอำเภอ —</option>
@@ -509,18 +522,20 @@ tbody td{padding:12px 14px;vertical-align:middle}
 
 <script>
 // ═══ STATE ═══
-let API = localStorage.getItem("sms_api") || "";
+const HARDCODED_API = "https://script.google.com/macros/s/AKfycbxiUXyYDIz-DrrAmhSIcMhEsjfXipnZCwANueF4sztlRR0xzc_NN69krEELAsgHeoUb/exec"; // ← แก้ตรงนี้ครั้งเดียว!
+let API = HARDCODED_API || localStorage.getItem("sms_api") || "";
 let TOKEN = sessionStorage.getItem("sms_token") || "";
 let districts = [];
 let currentTab = "summary";
 let showForm = true;
+let allStudentNames = []; // สำหรับ autocomplete
+let allSchoolNames  = [];
 
 const STATUS_CLASS = ["s0","s1","s2","s3"];
 const STATUS_LIST  = ["กำลังทำหนังสือ","รอโรงเรียนตอบกลับ","ตอบกลับแล้ว","รอลงนาม"];
 
 // ═══ INIT ═══
 window.onload = () => {
-  if (API) { document.getElementById("apiInput").value = API; document.getElementById("apiBox").style.display = "none"; }
   if (TOKEN) { showApp(); init(); }
 };
 
@@ -744,7 +759,10 @@ async function loadList() {
   if (!district) return;
   setLoading("listBody", 7);
   const d = await api({ action: "getStudents", district });
-  if (d && d.success) renderList(d.students, district);
+  if (d && d.success) {
+    renderList(d.students, district);
+    collectNames(d.students); // เก็บชื่อสำหรับ autocomplete
+  }
 }
 
 function renderList(students, district) {
@@ -860,6 +878,7 @@ async function doSearch() {
         </div>
       </td>
     </tr>`).join("");
+  collectNames(d.students); // อัปเดต autocomplete จากผลค้นหา
 }
 
 function clearSearch() {
@@ -869,6 +888,7 @@ function clearSearch() {
   document.getElementById("searchBody").innerHTML = `<tr><td colspan="8">
     <div class="empty"><div class="ico">🔍</div><p>พิมพ์ค้นหาเพื่อแสดงผล</p></div>
   </td></tr>`;
+  acClose();
 }
 
 async function delStudentFromSearch(district, rowIndex, name) {
@@ -876,6 +896,81 @@ async function delStudentFromSearch(district, rowIndex, name) {
   const d = await api({ action: "deleteStudent", district, rowIndex });
   if (d && d.success) { toast(d.message,"ok"); doSearch(); loadSummary(); }
   else toast((d&&d.message)||"ลบไม่สำเร็จ","err");
+}
+
+// ═══ AUTOCOMPLETE ═══
+let acIdx = -1;
+
+function collectNames(students) {
+  students.forEach(s => {
+    if (s.fullname && !allStudentNames.includes(s.fullname)) allStudentNames.push(s.fullname);
+    if (s.school   && !allSchoolNames.includes(s.school))   allSchoolNames.push(s.school);
+  });
+}
+
+function acInput(val) {
+  acIdx = -1;
+  const q = val.trim().toLowerCase();
+  if (q.length < 1) { acClose(); return; }
+
+  const matches = [];
+  allStudentNames.forEach(n => { if (n.toLowerCase().includes(q)) matches.push({text:n, type:"ชื่อ"}); });
+  allSchoolNames.forEach(n  => { if (n.toLowerCase().includes(q)) matches.push({text:n, type:"โรงเรียน"}); });
+
+  const list = document.getElementById("acList");
+  if (!matches.length) { acClose(); return; }
+
+  list.innerHTML = matches.slice(0,8).map((m,i) =>
+    `<div class="ac-item" data-val="${esc(m.text)}" onmousedown="acSelect('${esc(m.text)}')" data-i="${i}">
+      <span style="flex:1">${highlight(m.text, q)}</span>
+      <span class="ac-tag">${m.type}</span>
+    </div>`
+  ).join("");
+  list.classList.add("show");
+}
+
+function highlight(text, q) {
+  const idx = text.toLowerCase().indexOf(q);
+  if (idx < 0) return esc(text);
+  return esc(text.slice(0,idx)) + `<mark>${esc(text.slice(idx,idx+q.length))}</mark>` + esc(text.slice(idx+q.length));
+}
+
+function acSelect(val) {
+  document.getElementById("searchQ").value = val;
+  acClose();
+  doSearch();
+}
+
+function acClose() {
+  document.getElementById("acList").classList.remove("show");
+  acIdx = -1;
+}
+
+function acKeydown(e) {
+  const list = document.getElementById("acList");
+  const items = list.querySelectorAll(".ac-item");
+  if (!list.classList.contains("show")) {
+    if (e.key === "Enter") { doSearch(); return; }
+    return;
+  }
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    acIdx = Math.min(acIdx+1, items.length-1);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    acIdx = Math.max(acIdx-1, -1);
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    if (acIdx >= 0 && items[acIdx]) {
+      acSelect(items[acIdx].dataset.val);
+    } else {
+      acClose(); doSearch();
+    }
+    return;
+  } else if (e.key === "Escape") {
+    acClose(); return;
+  }
+  items.forEach((el,i) => el.classList.toggle("active", i === acIdx));
 }
 
 // ═══ UTILS ═══
