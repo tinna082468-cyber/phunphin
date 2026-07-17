@@ -86,7 +86,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--gray-800)
 .content{padding:24px 28px;max-width:1200px;margin:0 auto}
 
 /* ─── SUMMARY CARDS ─── */
-.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
 .sum-card{background:#fff;border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);
   border:1px solid var(--gray-200);border-left:4px solid var(--clr,var(--gray-200))}
 .sum-label{font-size:12px;font-weight:700;color:var(--gray-400);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
@@ -216,7 +216,7 @@ tbody td{padding:12px 14px;vertical-align:middle}
 <div id="loginPage">
   <div class="login-card">
     <div class="login-logo">🎓</div>
-    <h1 class="login-title">ระบบจัดการนักศึกษาฝึกสอน</h1>
+    <h1 class="login-title">ระบบจัดการนักศึกษา</h1>
     <p class="login-sub">กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
 
 
@@ -267,8 +267,12 @@ tbody td{padding:12px 14px;vertical-align:middle}
         <div class="sum-value" id="s-s1">—</div>
       </div>
       <div class="sum-card" style="--clr:var(--teal)">
-        <div class="sum-label">ตอบกลับแล้ว / รอลงนาม</div>
-        <div class="sum-value" id="s-s23">—</div>
+        <div class="sum-label">ตอบกลับแล้ว</div>
+        <div class="sum-value" id="s-s2">—</div>
+      </div>
+      <div class="sum-card" style="--clr:var(--purple)">
+        <div class="sum-label">รอลงนาม</div>
+        <div class="sum-value" id="s-s3">—</div>
       </div>
     </div>
 
@@ -749,7 +753,8 @@ async function loadSummary() {
   document.getElementById("s-total").textContent = total;
   document.getElementById("s-s0").textContent = s[0];
   document.getElementById("s-s1").textContent = s[1];
-  document.getElementById("s-s23").textContent = s[2]+s[3];
+  document.getElementById("s-s2").textContent = s[2];
+  document.getElementById("s-s3").textContent = s[3];
   document.getElementById("summaryBody").innerHTML = rows.join("") || emptyRow(7);
 }
 
